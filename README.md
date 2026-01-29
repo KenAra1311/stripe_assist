@@ -17,7 +17,55 @@ cd stripe_assist
 npm install
 ```
 
-### 3. 環境変数の設定
+### 3. Ollama のセットアップ（ローカル AI）
+
+このアプリケーションは Ollama を使用してローカルで AI チャット機能を提供します。
+
+#### Ollama のインストール
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+**Windows:**
+[Ollama 公式サイト](https://ollama.com/download)からインストーラーをダウンロードしてください。
+
+#### モデルのダウンロード
+
+Ollama でツール呼び出しをサポートするモデルをダウンロードします。推奨モデル：
+
+```bash
+# 推奨: Llama 3.1 (ツール呼び出しサポート)
+ollama pull llama3.1
+
+# または他の対応モデル
+ollama pull llama3.2
+ollama pull mistral
+ollama pull qwen2.5
+```
+
+#### Ollama サーバーの起動
+
+Ollama は通常バックグラウンドで自動起動しますが、手動で起動する場合：
+
+```bash
+ollama serve
+```
+
+サーバーが起動したら、`http://localhost:11434` でアクセス可能になります。
+
+#### 起動確認
+
+```bash
+# Ollama が起動しているか確認
+curl http://localhost:11434
+
+# インストール済みモデルの確認
+ollama list
+```
+
+### 4. 環境変数の設定
 
 `.env.example`をコピーして`.env`ファイルを作成します。
 
@@ -39,11 +87,13 @@ AUTH_SECRET="your-auth-secret-here"
 # openssl rand -hex 32
 ENCRYPTION_KEY="your-64-character-hex-key-here"
 
-# Gemini API
-GEMINI_API_KEY="your-gemini-api-key"
+# Ollama設定（ローカルAI）
+# Ollamaサーバーのホスト（デフォルトのまま使用可能）
+OLLAMA_HOST="http://localhost:11434"
 
-# Optional: 開発/テスト用のデフォルトStripeキー
-# STRIPE_SECRET_KEY="sk_test_..."
+# 使用するモデル（ツール呼び出しをサポートするモデル）
+# 推奨: llama3.1, llama3.2, mistral, qwen2.5
+OLLAMA_MODEL="llama3.1"
 ```
 
 #### 環境変数の生成コマンド
@@ -56,7 +106,7 @@ openssl rand -base64 32
 openssl rand -hex 32
 ```
 
-### 4. データベースのセットアップ
+### 5. データベースのセットアップ
 
 Prismaのマイグレーションを実行してデータベースを作成します。
 
@@ -64,13 +114,13 @@ Prismaのマイグレーションを実行してデータベースを作成し�
 npx prisma migrate dev
 ```
 
-### 5. 初期データの投入（オプション）
+### 6. 初期データの投入（オプション）
 
 ```bash
 npm run db:seed
 ```
 
-### 6. 開発サーバーの起動
+### 7. 開発サーバーの起動
 
 ```bash
 npm run dev
@@ -93,7 +143,7 @@ npm run dev
 - **認証**: [NextAuth.js v5](https://next-auth.js.org)
 - **データベース**: [Prisma](https://prisma.io) + SQLite
 - **UI**: React Bootstrap, Tailwind CSS
-- **AI**: Gemini API
+- **AI**: Ollama（ローカルLLM）
 - **決済**: Stripe API
 
 ## プロジェクト構成
