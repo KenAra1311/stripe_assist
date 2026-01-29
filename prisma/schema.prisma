@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 組織（将来のSaaS対応）
+model Organization {
+  id              String        @id @default(cuid())
+  name            String
+  stripeSecretKey String?       // 暗号化して保存
+  stripeKeyIv     String?       // 暗号化IV
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  users           User[]
+  chatSessions    ChatSession[]
+  auditLogs       AuditLog[]
+}
+
+// ユーザー
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  password       String        // bcryptハッシュ
+  name           String?
+  role           String        @default("member") // "admin" | "member"
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  chatSessions   ChatSession[]
+  auditLogs      AuditLog[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+}
+
+// チャットセッション
+model ChatSession {
+  id             String        @id @default(cuid())
+  title          String?
+  mode           String        @default("simulation") // "simulation" | "actual"
+  userId         String
+  organizationId String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  messages       ChatMessage[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([organizationId])
+}
+
+// チャットメッセージ
+model ChatMessage {
+  id            String      @id @default(cuid())
+  role          String      // "user" | "assistant"
+  content       String
+  functionCalls String?     // JSON string
+  sessionId     String
+  session       ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@index([sessionId])
+}
+
+// 監査ログ
+model AuditLog {
+  id             String       @id @default(cuid())
+  action         String
+  resourceType   String
+  resourceId     String?
+  input          String       // JSON string
+  output         String?      // JSON string
+  success        Boolean
+  userId         String
+  organizationId String
+  user           User         @relation(fields: [userId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([createdAt])
+}
