@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stripe Assist
 
-## Getting Started
+AI-powered Stripe assistant chat application built with Next.js, Prisma, and NextAuth.js.
 
-First, run the development server:
+## セットアップ手順
+
+### 1. リポジトリのクローン
+
+```bash
+git clone <repository-url>
+cd stripe_assist
+```
+
+### 2. 依存関係のインストール
+
+```bash
+npm install
+```
+
+### 3. 環境変数の設定
+
+`.env.example`をコピーして`.env`ファイルを作成します。
+
+```bash
+cp .env.example .env
+```
+
+以下の環境変数を設定してください：
+
+```env
+# Database（デフォルトのまま）
+DATABASE_URL="file:./dev.db"
+
+# Auth.js - 以下のコマンドで生成
+# openssl rand -base64 32
+AUTH_SECRET="your-auth-secret-here"
+
+# 暗号化キー（Stripeキーの暗号化用）- 以下のコマンドで生成
+# openssl rand -hex 32
+ENCRYPTION_KEY="your-64-character-hex-key-here"
+
+# Gemini API
+GEMINI_API_KEY="your-gemini-api-key"
+
+# Optional: 開発/テスト用のデフォルトStripeキー
+# STRIPE_SECRET_KEY="sk_test_..."
+```
+
+#### 環境変数の生成コマンド
+
+```bash
+# AUTH_SECRETの生成
+openssl rand -base64 32
+
+# ENCRYPTION_KEYの生成
+openssl rand -hex 32
+```
+
+### 4. データベースのセットアップ
+
+Prismaのマイグレーションを実行してデータベースを作成します。
+
+```bash
+npx prisma migrate dev
+```
+
+### 5. 初期データの投入（オプション）
+
+```bash
+npm run db:seed
+```
+
+### 6. 開発サーバーの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いてアプリケーションを確認できます。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 利用可能なスクリプト
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` - 開発サーバーの起動
+- `npm run build` - 本番用ビルド
+- `npm start` - 本番サーバーの起動
+- `npm run lint` - ESLintによるコードチェック
+- `npm run db:seed` - データベースに初期データを投入
+- `npm run db:reset` - データベースをリセットして初期データを投入
+
+## 技術スタック
+
+- **フレームワーク**: [Next.js 16](https://nextjs.org)
+- **認証**: [NextAuth.js v5](https://next-auth.js.org)
+- **データベース**: [Prisma](https://prisma.io) + SQLite
+- **UI**: React Bootstrap, Tailwind CSS
+- **AI**: Gemini API
+- **決済**: Stripe API
+
+## プロジェクト構成
+
+```
+stripe_assist/
+├── src/
+│   ├── app/              # Next.js App Router
+│   ├── components/       # Reactコンポーネント
+│   └── lib/              # ユーティリティとライブラリ
+├── prisma/
+│   ├── schema.prisma     # データベーススキーマ
+│   ├── migrations/       # マイグレーションファイル
+│   └── seed.ts          # シードデータ
+└── public/              # 静的ファイル
+```
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+Next.jsについて詳しく学ぶには以下のリソースをご覧ください：
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Learn Next.js](https://nextjs.org/learn)
+- [Next.js GitHub repository](https://github.com/vercel/next.js)
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Vercel Platformを使用したデプロイが最も簡単です。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+詳細は[Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying)をご覧ください。
