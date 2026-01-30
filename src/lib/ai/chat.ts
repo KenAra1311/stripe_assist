@@ -1,7 +1,6 @@
-import { getOllamaClient, getModelName } from './client';
+import { getGeminiClient, getModelName } from './client';
 import { stripeTools } from './stripe-functions';
 import { functionHandlers } from './function-handlers';
-import { Message } from 'ollama';
 import Stripe from 'stripe';
 
 export type ChatMode = 'simulation' | 'actual';
@@ -82,20 +81,37 @@ export async function processChat(
     apiVersion: '2026-01-28.clover',
   });
 
-  const ollama = getOllamaClient();
+  const gemini = getGeminiClient();
   const modelName = getModelName();
 
-  // Convert messages to Ollama format
-  const ollamaMessages: Message[] = [
-    {
-      role: 'system',
-      content: getSystemPrompt(mode),
-    },
-    ...messages.map((m) => ({
-      role: m.role === 'user' ? 'user' as const : 'assistant' as const,
-      content: m.content,
-    })),
-  ];
+  // Convert messages to Gemini format
+  // Gemini doesn't have a 'system' role, so prepend system prompt to first user message
+  const systemPrompt = getSystemPrompt(mode);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const geminiContents: any[] = [];
+
+  if (messages.length > 0) {
+    // Prepend system prompt to first user message
+    geminiContents.push({
+      role: 'user' as const,
+      parts: [{ text: `${systemPrompt}\n\n${messages[0].content}` }],
+    });
+
+    // Add remaining messages
+    for (let i = 1; i < messages.length; i++) {
+      const msg = messages[i];
+      geminiContents.push({
+        role: msg.role === 'user' ? ('user' as const) : ('model' as const),
+        parts: [{ text: msg.content }],
+      });
+    }
+  } else {
+    // Fallback: if no messages, just add system prompt as user message
+    geminiContents.push({
+      role: 'user' as const,
+      parts: [{ text: systemPrompt }],
+    });
+  }
 
   const functionCallResults: FunctionCallResult[] = [];
   const MAX_ITERATIONS = 10;
@@ -104,29 +120,53 @@ export async function processChat(
   while (iterations < MAX_ITERATIONS) {
     iterations++;
 
-    const response = await ollama.chat({
+    // Call Gemini API with function declarations
+    const response = await gemini.models.generateContent({
       model: modelName,
-      messages: ollamaMessages,
-      tools: stripeTools,
+      contents: geminiContents,
+      config: {
+        tools: [stripeTools], // Tools go inside config
+      },
     });
 
-    const assistantMessage = response.message;
+    const candidate = response.candidates?.[0];
+    if (!candidate || !candidate.content) {
+      throw new Error('No valid response from Gemini');
+    }
 
-    // Check if there are tool calls
-    if (assistantMessage.tool_calls && assistantMessage.tool_calls.length > 0) {
-      // Add assistant message with tool calls to history
-      ollamaMessages.push(assistantMessage);
+    const parts = candidate.content.parts || [];
 
-      // Process each tool call
-      for (const toolCall of assistantMessage.tool_calls) {
-        const functionName = toolCall.function.name;
-        const functionArgs = toolCall.function.arguments as Record<string, unknown>;
+    // Check if there are function calls
+    const functionCalls = parts.filter((part) => 'functionCall' in part && part.functionCall);
+
+    if (functionCalls.length > 0) {
+      // Add model's response to history
+      geminiContents.push({
+        role: 'model' as const,
+        parts: parts,
+      });
+
+      // Process each function call
+      const functionResponseParts = [];
+
+      for (const part of functionCalls) {
+        if (!('functionCall' in part) || !part.functionCall) continue;
+
+        const functionCall = part.functionCall;
+        const functionName = functionCall.name;
+        if (!functionName) continue; // Skip if function name is undefined
+
+        const functionArgs = (functionCall.args || {}) as Record<string, unknown>;
         const handler = functionHandlers[functionName];
 
-        let result: unknown;
+        let result: Record<string, unknown>;
         if (handler) {
           try {
-            result = await handler(stripe, functionArgs);
+            const rawResult = await handler(stripe, functionArgs);
+            // Ensure result is a plain object for Gemini API
+            result = typeof rawResult === 'object' && rawResult !== null
+              ? (rawResult as Record<string, unknown>)
+              : { value: rawResult };
             functionCallResults.push({
               name: functionName,
               args: functionArgs,
@@ -144,22 +184,38 @@ export async function processChat(
           }
         } else {
           result = { error: `Unknown function: ${functionName}` };
+          functionCallResults.push({
+            name: functionName,
+            args: functionArgs,
+            result,
+          });
         }
 
-        // Add tool response to messages
-        ollamaMessages.push({
-          role: 'tool',
-          content: JSON.stringify(result),
+        // Add function response part
+        functionResponseParts.push({
+          functionResponse: {
+            name: functionName,
+            response: result,
+          },
         });
       }
+
+      // Add function responses to history as 'user' role (required by Gemini)
+      geminiContents.push({
+        role: 'user' as const,
+        parts: functionResponseParts,
+      });
 
       // Continue the loop to get the next response
       continue;
     }
 
-    // No tool calls - return the final text response
+    // No function calls - extract text response
+    const textParts = parts.filter((part: any) => part.text);
+    const finalText = textParts.map((part: any) => part.text).join('');
+
     return {
-      content: assistantMessage.content || 'エラーが発生しました。',
+      content: finalText || 'エラーが発生しました。',
       functionCalls: functionCallResults,
     };
   }

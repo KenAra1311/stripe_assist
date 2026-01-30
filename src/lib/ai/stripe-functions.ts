@@ -1,13 +1,11 @@
-import { Tool } from 'ollama';
-
-export const stripeTools: Tool[] = [
-  // Customer Operations
-  {
-    type: 'function',
-    function: {
+// Gemini API function declarations for Stripe operations
+export const stripeTools = {
+  functionDeclarations: [
+    // Customer Operations
+    {
       name: 'createCustomer',
       description: '新しいStripe顧客を作成します。テストクロックに紐付ける場合はtestClockIdを指定します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           email: {
@@ -30,13 +28,10 @@ export const stripeTools: Tool[] = [
         required: ['email'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'listCustomers',
       description: '顧客一覧を取得します。メールアドレスでフィルタリングできます',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           email: {
@@ -50,13 +45,10 @@ export const stripeTools: Tool[] = [
         },
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'getCustomer',
       description: '顧客IDで特定の顧客情報を取得します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           customerId: {
@@ -67,15 +59,12 @@ export const stripeTools: Tool[] = [
         required: ['customerId'],
       },
     },
-  },
 
-  // Product Operations
-  {
-    type: 'function',
-    function: {
+    // Product Operations
+    {
       name: 'createProduct',
       description: '新しい商品を作成します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           name: {
@@ -94,13 +83,10 @@ export const stripeTools: Tool[] = [
         required: ['name'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'listProducts',
       description: '商品一覧を取得します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           active: {
@@ -114,15 +100,12 @@ export const stripeTools: Tool[] = [
         },
       },
     },
-  },
 
-  // Price Operations
-  {
-    type: 'function',
-    function: {
+    // Price Operations
+    {
       name: 'createPrice',
       description: '商品の価格を作成します（一括払いまたはサブスクリプション）',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           productId: {
@@ -153,13 +136,10 @@ export const stripeTools: Tool[] = [
         required: ['productId', 'unitAmount'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'listPrices',
       description: '価格一覧を取得します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           productId: {
@@ -177,15 +157,12 @@ export const stripeTools: Tool[] = [
         },
       },
     },
-  },
 
-  // Subscription Operations
-  {
-    type: 'function',
-    function: {
+    // Subscription Operations
+    {
       name: 'createSubscription',
       description: '顧客のサブスクリプションを作成します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           customerId: {
@@ -208,13 +185,10 @@ export const stripeTools: Tool[] = [
         required: ['customerId', 'priceId'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'listSubscriptions',
       description: 'サブスクリプション一覧を取得します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           customerId: {
@@ -232,13 +206,10 @@ export const stripeTools: Tool[] = [
         },
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'cancelSubscription',
       description: 'サブスクリプションをキャンセルします',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           subscriptionId: {
@@ -253,15 +224,12 @@ export const stripeTools: Tool[] = [
         required: ['subscriptionId'],
       },
     },
-  },
 
-  // Coupon Operations
-  {
-    type: 'function',
-    function: {
+    // Coupon Operations
+    {
       name: 'createCoupon',
       description: '割引クーポンを作成します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           percentOff: {
@@ -296,13 +264,10 @@ export const stripeTools: Tool[] = [
         required: ['duration'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'listCoupons',
       description: 'クーポン一覧を取得します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           limit: {
@@ -312,13 +277,10 @@ export const stripeTools: Tool[] = [
         },
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'deleteCoupon',
       description: 'クーポンを削除します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           couponId: {
@@ -329,15 +291,12 @@ export const stripeTools: Tool[] = [
         required: ['couponId'],
       },
     },
-  },
 
-  // Invoice Preview (Simulation)
-  {
-    type: 'function',
-    function: {
+    // Invoice Preview (Simulation)
+    {
       name: 'previewInvoice',
       description: '【シミュレーション】請求書のプレビューを取得します。クーポン適用後の金額を確認できます',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           customerId: {
@@ -360,15 +319,12 @@ export const stripeTools: Tool[] = [
         required: ['customerId'],
       },
     },
-  },
 
-  // Subscription Preview (Simulation)
-  {
-    type: 'function',
-    function: {
+    // Subscription Preview (Simulation)
+    {
       name: 'previewSubscription',
       description: '【シミュレーション】サブスクリプションの費用をプレビューします。実際にデータは作成されません',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           customerId: {
@@ -387,15 +343,12 @@ export const stripeTools: Tool[] = [
         required: ['customerId', 'priceId'],
       },
     },
-  },
 
-  // Test Clock Operations
-  {
-    type: 'function',
-    function: {
+    // Test Clock Operations
+    {
       name: 'createTestClock',
       description: 'テストクロックを作成します。時間を固定して、サブスクリプションのライフサイクルをテストできます',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           frozenTime: {
@@ -410,13 +363,10 @@ export const stripeTools: Tool[] = [
         required: ['frozenTime'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'getTestClock',
       description: 'テストクロックの詳細を取得します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           testClockId: {
@@ -427,13 +377,10 @@ export const stripeTools: Tool[] = [
         required: ['testClockId'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'listTestClocks',
       description: 'テストクロック一覧を取得します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           limit: {
@@ -443,13 +390,10 @@ export const stripeTools: Tool[] = [
         },
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'advanceTestClock',
       description: 'テストクロックの時刻を進めます。関連するサブスクリプションも自動的に更新されます',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           testClockId: {
@@ -464,13 +408,10 @@ export const stripeTools: Tool[] = [
         required: ['testClockId', 'frozenTime'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'deleteTestClock',
       description: 'テストクロックを削除します。関連する顧客・サブスクリプションも削除されます',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           testClockId: {
@@ -481,15 +422,12 @@ export const stripeTools: Tool[] = [
         required: ['testClockId'],
       },
     },
-  },
 
-  // Payment Method Operations
-  {
-    type: 'function',
-    function: {
+    // Payment Method Operations
+    {
       name: 'createPaymentMethod',
       description: 'テスト用のカード支払い方法を作成します。テストモードでのみ使用可能です',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           cardNumber: {
@@ -512,13 +450,10 @@ export const stripeTools: Tool[] = [
         required: ['cardNumber', 'expMonth', 'expYear', 'cvc'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'attachPaymentMethod',
       description: '支払い方法を顧客に紐付けます',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           paymentMethodId: {
@@ -533,13 +468,10 @@ export const stripeTools: Tool[] = [
         required: ['paymentMethodId', 'customerId'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'listPaymentMethods',
       description: '顧客の支払い方法一覧を取得します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           customerId: {
@@ -558,13 +490,10 @@ export const stripeTools: Tool[] = [
         required: ['customerId'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'detachPaymentMethod',
       description: '支払い方法を顧客から切り離します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           paymentMethodId: {
@@ -575,13 +504,10 @@ export const stripeTools: Tool[] = [
         required: ['paymentMethodId'],
       },
     },
-  },
-  {
-    type: 'function',
-    function: {
+    {
       name: 'setDefaultPaymentMethod',
       description: '顧客のデフォルト支払い方法を設定します',
-      parameters: {
+      parametersJsonSchema: {
         type: 'object',
         properties: {
           customerId: {
@@ -596,5 +522,5 @@ export const stripeTools: Tool[] = [
         required: ['customerId', 'paymentMethodId'],
       },
     },
-  },
-];
+  ],
+};

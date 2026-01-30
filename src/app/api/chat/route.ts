@@ -137,27 +137,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle Ollama-specific errors
+    // Handle Gemini API-specific errors
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    if (errorMessage.includes('model') && errorMessage.includes('not found')) {
-      const modelName = process.env.OLLAMA_MODEL || 'llama3.1';
+    // API key issues
+    if (errorMessage.includes('API key') || errorMessage.includes('GEMINI_API_KEY')) {
       return NextResponse.json(
         {
-          error: `AIモデル「${modelName}」が見つかりません。Ollamaでモデルをダウンロードしてください。`,
-          hint: `ターミナルで「ollama pull ${modelName}」を実行してください。`
+          error: 'Gemini APIキーが設定されていないか無効です。',
+          hint: '環境変数 GEMINI_API_KEY を設定してください。APIキーは https://aistudio.google.com/apikey から取得できます。'
+        },
+        { status: 401 }
+      );
+    }
+
+    // Model not found or invalid
+    if (errorMessage.includes('model') && (errorMessage.includes('not found') || errorMessage.includes('invalid'))) {
+      const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+      return NextResponse.json(
+        {
+          error: `AIモデル「${modelName}」が見つかりません。`,
+          hint: '有効なモデル名: gemini-2.5-flash, gemini-2.5-flash-lite, gemini-2.5-pro'
+        },
+        { status: 400 }
+      );
+    }
+
+    // Rate limiting (15 RPM for free tier)
+    if (errorMessage.includes('quota') || errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+      return NextResponse.json(
+        {
+          error: 'APIのレート制限に達しました。しばらく待ってから再試行してください。',
+          hint: 'Gemini APIの無料枠は1分あたり15リクエストです。'
+        },
+        { status: 429 }
+      );
+    }
+
+    // Network/connection errors
+    if (errorMessage.includes('fetch failed') || errorMessage.includes('network')) {
+      return NextResponse.json(
+        {
+          error: 'Gemini APIへの接続に失敗しました。インターネット接続を確認してください。',
+          hint: 'Google APIサービスのステータスを https://status.cloud.google.com/ で確認できます。'
         },
         { status: 503 }
       );
     }
 
-    if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('fetch failed')) {
+    // Safety/content filtering
+    if (errorMessage.includes('SAFETY') || errorMessage.includes('blocked')) {
       return NextResponse.json(
         {
-          error: 'Ollamaに接続できません。Ollamaが起動していることを確認してください。',
-          hint: 'ターミナルで「ollama serve」を実行してください。'
+          error: 'コンテンツが安全性フィルターによってブロックされました。',
+          hint: '別の表現で試してください。'
         },
-        { status: 503 }
+        { status: 400 }
       );
     }
 

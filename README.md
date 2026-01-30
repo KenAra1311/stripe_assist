@@ -17,53 +17,20 @@ cd stripe_assist
 npm install
 ```
 
-### 3. Ollama のセットアップ（ローカル AI）
+### 3. Gemini API の設定
 
-このアプリケーションは Ollama を使用してローカルで AI チャット機能を提供します。
+このアプリケーションは Google Gemini API を使用して AI チャット機能を提供します。
 
-#### Ollama のインストール
+#### Gemini API キーの取得
 
-**macOS / Linux:**
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-```
+1. [Google AI Studio](https://aistudio.google.com/apikey) にアクセス
+2. Googleアカウントでサインイン
+3. 「Create API key」をクリック
+4. 生成された API キーをコピー（後ほど環境変数に設定します）
 
-**Windows:**
-[Ollama 公式サイト](https://ollama.com/download)からインストーラーをダウンロードしてください。
-
-#### モデルのダウンロード
-
-Ollama でツール呼び出しをサポートするモデルをダウンロードします。推奨モデル：
-
-```bash
-# 推奨: Llama 3.1 (ツール呼び出しサポート)
-ollama pull llama3.1
-
-# または他の対応モデル
-ollama pull llama3.2
-ollama pull mistral
-ollama pull qwen2.5
-```
-
-#### Ollama サーバーの起動
-
-Ollama は通常バックグラウンドで自動起動しますが、手動で起動する場合：
-
-```bash
-ollama serve
-```
-
-サーバーが起動したら、`http://localhost:11434` でアクセス可能になります。
-
-#### 起動確認
-
-```bash
-# Ollama が起動しているか確認
-curl http://localhost:11434
-
-# インストール済みモデルの確認
-ollama list
-```
+**注意**:
+- 無料ティアでは 1分あたり15リクエスト、1日あたり1,500リクエストまで利用可能です
+- APIキーは秘密情報として扱い、公開リポジトリにコミットしないでください
 
 ### 4. 環境変数の設定
 
@@ -87,13 +54,14 @@ AUTH_SECRET="your-auth-secret-here"
 # openssl rand -hex 32
 ENCRYPTION_KEY="your-64-character-hex-key-here"
 
-# Ollama設定（ローカルAI）
-# Ollamaサーバーのホスト（デフォルトのまま使用可能）
-OLLAMA_HOST="http://localhost:11434"
+# Google Gemini API 設定
+# Google AI Studio で取得したAPIキー
+GEMINI_API_KEY="your-gemini-api-key-here"
 
-# 使用するモデル（ツール呼び出しをサポートするモデル）
-# 推奨: llama3.1, llama3.2, mistral, qwen2.5
-OLLAMA_MODEL="llama3.1"
+# 使用するモデル（function calling をサポートするモデル）
+# 推奨: gemini-2.5-flash（高速で費用対効果が高い）
+# その他: gemini-2.5-flash-lite, gemini-2.5-pro
+GEMINI_MODEL="gemini-2.5-flash"
 ```
 
 #### 環境変数の生成コマンド
@@ -143,7 +111,7 @@ npm run dev
 - **認証**: [NextAuth.js v5](https://next-auth.js.org)
 - **データベース**: [Prisma](https://prisma.io) + SQLite
 - **UI**: React Bootstrap, Tailwind CSS
-- **AI**: Ollama（ローカルLLM）
+- **AI**: Google Gemini API (gemini-2.5-flash)
 - **決済**: Stripe API
 
 ## プロジェクト構成

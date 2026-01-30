@@ -1,15 +1,18 @@
-import { Ollama } from 'ollama';
+import { GoogleGenAI } from '@google/genai';
 
-let ollamaClient: Ollama | null = null;
+let geminiClient: GoogleGenAI | null = null;
 
-export function getOllamaClient(): Ollama {
-  if (!ollamaClient) {
-    const host = process.env.OLLAMA_HOST || 'http://localhost:11434';
-    ollamaClient = new Ollama({ host });
+export function getGeminiClient(): GoogleGenAI {
+  if (!geminiClient) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not set in environment variables');
+    }
+    geminiClient = new GoogleGenAI({ apiKey });
   }
-  return ollamaClient;
+  return geminiClient;
 }
 
 export function getModelName(): string {
-  return process.env.OLLAMA_MODEL || 'llama3.1';
+  return process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 }

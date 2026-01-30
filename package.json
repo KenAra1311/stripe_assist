@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
+    "@google/genai": "^1.38.0",
     "@popperjs/core": "^2.11.8",
     "@prisma/client": "^6.19.2",
     "bcryptjs": "^3.0.3",
@@ -19,7 +20,6 @@
     "bootstrap-icons": "^1.13.1",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
-    "ollama": "^0.6.3",
     "prisma": "^6.19.2",
     "react": "19.2.3",
     "react-bootstrap": "^2.10.10",
